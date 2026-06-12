@@ -45,20 +45,13 @@ export const skinCommand = {
             const { id: uuid, name: officialName } = mojangResponse.data;
 
             // 3. Define Renders
-            const renders = {
-                body: `https://crafatar.com/renders/body/${uuid}?overlay`,
-                bust: `https://crafatar.com/renders/head/${uuid}?overlay`,
-                head: `https://minotar.net/armor/body/${uuid}/100.png`, // Prompt says Minotar for Head, using their body for 'Head' as per request context
-                skin: `https://crafatar.com/skins/${uuid}`
-            };
-            
-            // Correction: Prompt says Head -> Minotar, Body/Bust/Skin -> Crafatar.
-            // Minotar Head is usually https://minotar.net/avatar/{uuid}
+            // Crafatar is used only for 3D renders (Body/Bust)
+            // Minotar is used for the Cube head and Skin file
             const renderUrls = {
                 'body': { url: `https://crafatar.com/renders/body/${uuid}?overlay`, provider: 'crafatar' },
                 'bust': { url: `https://crafatar.com/renders/head/${uuid}?overlay`, provider: 'crafatar' },
-                'head': { url: `https://minotar.net/avatar/${uuid}/100.png`, provider: 'minotar' },
-                'skin': { url: `https://crafatar.com/skins/${uuid}`, provider: 'crafatar' }
+                'head': { url: `https://minotar.net/cube/${uuid}/100.png`, provider: 'minotar' },
+                'skin': { url: `https://minotar.net/skin/${uuid}`, provider: 'minotar' }
             };
 
             const getProviderIndicator = () => {
@@ -76,6 +69,7 @@ export const skinCommand = {
                     .setThumbnail(`https://crafatar.com/avatars/${uuid}?overlay`)
                     .addFields(
                         { name: 'UUID', value: `\`${uuid}\``, inline: true },
+                        { name: 'Download', value: `[Click here to download](${renderUrls['skin'].url})`, inline: true },
                         { name: 'Render Provider Status', value: getProviderIndicator(), inline: false }
                     )
                     .setFooter({ text: `Viewing: ${type.charAt(0).toUpperCase() + type.slice(1)}` })
@@ -89,7 +83,7 @@ export const skinCommand = {
                     { id: 'body', label: 'Full Body', provider: 'crafatar' },
                     { id: 'bust', label: 'Bust', provider: 'crafatar' },
                     { id: 'head', label: 'Head', provider: 'minotar' },
-                    { id: 'skin', label: 'Skin', provider: 'crafatar' }
+                    { id: 'skin', label: 'Skin', provider: 'minotar' }
                 ];
 
                 buttons.forEach(btn => {
