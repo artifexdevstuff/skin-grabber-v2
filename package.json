@@ -1,0 +1,35 @@
+{
+  "name": "skin-grabber-v2",
+  "version": "1.0.0",
+  "description": "received an email that it hit 10k lol (its been offline for 2 years)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artifexdevstuff/skin-grabber-v2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/artifexdevstuff/skin-grabber-v2/issues"
+  },
+  "homepage": "https://github.com/artifexdevstuff/skin-grabber-v2#readme",
+  "dependencies": {
+    "axios": "^1.17.0",
+    "discord.js": "^14.26.4",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.9.36",
+    "@types/node": "^25.9.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
