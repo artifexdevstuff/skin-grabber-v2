@@ -45,12 +45,14 @@ export const skinCommand = {
             const { id: uuid, name: officialName } = mojangResponse.data;
 
             // 3. Define Renders
-            // Using Minotar for all renders as requested
+            // Minotar for 2D, Crafatar for 3D
             const renderUrls = {
                 'body': { url: `https://minotar.net/body/${uuid}/100.png`, provider: 'minotar' },
                 'bust': { url: `https://minotar.net/bust/${uuid}/100.png`, provider: 'minotar' },
                 'head': { url: `https://minotar.net/cube/${uuid}/100.png`, provider: 'minotar' },
-                'skin': { url: `https://minotar.net/skin/${uuid}`, provider: 'minotar' }
+                'skin': { url: `https://minotar.net/skin/${uuid}`, provider: 'minotar' },
+                'body_3d': { url: `https://crafatar.com/renders/body/${uuid}?overlay`, provider: 'crafatar' },
+                'bust_3d': { url: `https://crafatar.com/renders/head/${uuid}?overlay`, provider: 'crafatar' }
             };
 
             const getProviderIndicator = () => {
@@ -61,6 +63,15 @@ export const skinCommand = {
             };
 
             const createEmbed = (type: keyof typeof renderUrls) => {
+                const labels: Record<string, string> = {
+                    body: 'Full Body (2D)',
+                    bust: 'Bust (2D)',
+                    head: 'Head (Cube)',
+                    skin: 'Raw Skin',
+                    body_3d: 'Full Body (3D)',
+                    bust_3d: 'Bust (3D)'
+                };
+
                 return new EmbedBuilder()
                     .setTitle(`${officialName}'s Minecraft Skin`)
                     .setColor(0x00AE86)
@@ -70,38 +81,54 @@ export const skinCommand = {
                         { name: 'Download', value: `[Click here to download](${renderUrls['skin'].url})`, inline: false },
                         { name: 'API Status', value: getProviderIndicator(), inline: false }
                     )
-                    .setFooter({ text: `Viewing: ${type.charAt(0).toUpperCase() + type.slice(1)}` })
+                    .setFooter({ text: `Viewing: ${labels[type]}` })
                     .setTimestamp();
             };
 
-            const createButtons = (currentType: string) => {
-                const row = new ActionRowBuilder<ButtonBuilder>();
+            const createComponents = (currentType: string) => {
+                const row1 = new ActionRowBuilder<ButtonBuilder>();
+                const row2 = new ActionRowBuilder<ButtonBuilder>();
                 
-                const buttons = [
+                const buttonsRow1 = [
                     { id: 'body', label: 'Full Body', provider: 'minotar' },
                     { id: 'bust', label: 'Bust', provider: 'minotar' },
                     { id: 'head', label: 'Head', provider: 'minotar' },
                     { id: 'skin', label: 'Skin', provider: 'minotar' }
                 ];
 
-                buttons.forEach(btn => {
-                    const isProviderOnline = btn.provider === 'crafatar' ? status.crafatar : status.minotar;
+                const buttonsRow2 = [
+                    { id: 'body_3d', label: '3D Body', provider: 'crafatar' },
+                    { id: 'bust_3d', label: '3D Bust', provider: 'crafatar' }
+                ];
+
+                buttonsRow1.forEach(btn => {
+                    const isProviderOnline = status.minotar; // Simplified since all are minotar
                     const button = new ButtonBuilder()
                         .setCustomId(btn.id)
                         .setLabel(btn.label)
                         .setStyle(!isProviderOnline ? ButtonStyle.Danger : ButtonStyle.Primary)
                         .setDisabled(!isProviderOnline || btn.id === currentType);
-                    row.addComponents(button);
+                    row1.addComponents(button);
                 });
 
-                return row;
+                buttonsRow2.forEach(btn => {
+                    const isProviderOnline = status.crafatar;
+                    const button = new ButtonBuilder()
+                        .setCustomId(btn.id)
+                        .setLabel(btn.label)
+                        .setStyle(!isProviderOnline ? ButtonStyle.Danger : ButtonStyle.Primary)
+                        .setDisabled(!isProviderOnline || btn.id === currentType);
+                    row2.addComponents(button);
+                });
+
+                return [row1, row2];
             };
 
             // 4. Send Initial Message
-            const initialType: keyof typeof renderUrls = status.minotar ? 'body' : 'head';
+            const initialType: keyof typeof renderUrls = status.crafatar ? 'body_3d' : 'body';
             const message = await interaction.editReply({
                 embeds: [createEmbed(initialType)],
-                components: [createButtons(initialType)]
+                components: createComponents(initialType)
             });
 
             // 5. Interaction Collector
@@ -116,11 +143,11 @@ export const skinCommand = {
                 }
 
                 const selectedType = i.customId as keyof typeof renderUrls;
-                
+
                 try {
                     await i.update({
                         embeds: [createEmbed(selectedType)],
-                        components: [createButtons(selectedType)]
+                        components: createComponents(selectedType)
                     });
                 } catch (err) {
                     console.error('Update failure:', err);
